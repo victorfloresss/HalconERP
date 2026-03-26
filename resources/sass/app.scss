@@ -1,0 +1,16 @@
+// Fonts
+@import url('https://fonts.bunny.net/css?family=Nunito');
+
+// Variables
+@import 'variables';
+
+// CoreUI 5 SCSS 
+@import '@coreui/coreui/scss/coreui';
+
+// Custom Layout Fixes
+.wrapper {
+  // Use CoreUI CSS variables to offset the wrapper, applying margin-left when sidebar is active
+  padding-left: var(--cui-sidebar-occupy-start, 0);
+  padding-right: var(--cui-sidebar-occupy-end, 0);
+  transition: padding 0.15s;
+}

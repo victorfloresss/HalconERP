@@ -1,4 +1,4 @@
-- Se añadiu un seeder para crear los usuarios de prueba.
+- Se añadio un seeder para crear los usuarios de prueba.
 - Se añadio un seeder para crear pedidos con datos y poder realizar pruebas.
 - Se mejoro la interfaz del usuario sin registro, se añadieron las evidencias.
 - Se agrego la funcion de ver detalles completos de cada pedido de manera individual.

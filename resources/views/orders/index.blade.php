@@ -4,7 +4,8 @@
 <style>
     .modal { background: rgba(0,0,0,0.5); }
     .modal-backdrop { display: none !important; } 
-    #auditModal { z-index: 9999 !important; }
+    #auditModal, #orderDetailsModal { z-index: 9999 !important; }
+    .btn-link:hover { color: #0056b3 !important; text-decoration: underline !important; }
 </style>
 
 <div class="container-fluid">
@@ -44,7 +45,13 @@
                     <tbody>
                         @foreach($orders as $order)
                         <tr>
-                            <td><strong>{{ $order->invoice_number }}</strong></td>
+                            <td>
+                                {{-- Link para ver detalles completos --}}
+                                <button type="button" class="btn btn-link fw-bold text-decoration-none p-0" 
+                                    onclick="viewOrderDetails({{ json_encode($order) }})" title="Clic para ver detalles completos">
+                                    {{ $order->invoice_number }}
+                                </button>
+                            </td>
                             <td class="text-start">{{ $order->customer_name }}</td>
                             <td class="text-start">
                                 <span title="{{ $order->materials }}" style="cursor: help;">
@@ -74,10 +81,7 @@
                                     @endphp
 
                                     @if($urlCarga || $urlEntrega)
-                                        <button type="button" 
-                                            class="btn btn-sm btn-outline-dark fw-bold" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#auditModal"
+                                        <button type="button" class="btn btn-sm btn-outline-dark fw-bold" 
                                             onclick="openAuditSimple('{{ $order->invoice_number }}', '{{ addslashes($order->customer_name) }}', '{{ $urlCarga }}', '{{ $urlEntrega }}', '{{ $order->status }}')">
                                             📸 Ver fotos
                                         </button>
@@ -136,7 +140,7 @@
     </div>
 </div>
 
-{{-- MODAL DE AUDITORÍA --}}
+{{-- MODAL 1: AUDITORÍA DE FOTOS --}}
 <div class="modal fade" id="auditModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content shadow-lg border-0 rounded-3">
@@ -145,12 +149,12 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4 bg-light">
-                <div class="row mb-4">
+                <div class="row mb-4 text-center">
                     <div class="col-md-6 border-end">
                         <p class="mb-1 text-muted small">CLIENTE</p>
                         <h6 id="modalCustomer" class="fw-bold"></h6>
                     </div>
-                    <div class="col-md-6 text-end">
+                    <div class="col-md-6">
                         <p class="mb-1 text-muted small">ESTADO</p>
                         <span id="modalStatus" class="badge"></span>
                     </div>
@@ -171,11 +175,54 @@
     </div>
 </div>
 
+{{-- MODAL 2: DETALLES COMPLETOS DEL PEDIDO --}}
+<div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-3">
+            <div class="modal-header bg-primary text-white border-0">
+                <h5 class="modal-title fw-bold">Información Completa: <span id="detInvoice"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-white">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <h6 class="text-uppercase text-muted small fw-bold mb-3">Cliente y Fiscal</h6>
+                        <div class="p-3 bg-light rounded shadow-sm">
+                            <p class="mb-1 text-secondary small">Nombre:</p>
+                            <p class="fw-bold mb-3" id="detCustomer"></p>
+                            <p class="mb-1 text-secondary small">Datos Fiscales:</p>
+                            <p class="small text-dark" id="detFiscal"></p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-uppercase text-muted small fw-bold mb-3">Logística</h6>
+                        <div class="p-3 bg-light rounded shadow-sm">
+                            <p class="mb-1 text-secondary small">Dirección de Entrega:</p>
+                            <p class="fw-bold mb-3" id="detAddress"></p>
+                            <p class="mb-1 text-secondary small">ID Cliente / Referencia:</p>
+                            <p class="small text-dark" id="detClientID"></p>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <h6 class="text-uppercase text-muted small fw-bold mb-3">Contenido y Notas</h6>
+                        <div class="p-3 border rounded shadow-sm">
+                            <p class="mb-1 text-secondary small">Materiales:</p>
+                            <p class="mb-3" id="detMaterials"></p>
+                            <p class="mb-1 text-secondary small">Notas Extra:</p>
+                            <p class="text-muted italic mb-0" id="detNotes"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+    // Función 1: Ver Fotos (Auditoría)
     function openAuditSimple(invoice, customer, urlCarga, urlEntrega, status) {
         document.getElementById('modalInvoice').innerText = invoice;
         document.getElementById('modalCustomer').innerText = customer;
-        
         const statusBadge = document.getElementById('modalStatus');
         statusBadge.innerText = status;
         statusBadge.className = 'badge ' + (status == 'Delivered' ? 'bg-success' : 'bg-info');
@@ -193,28 +240,52 @@
             : `<div class="p-4 border rounded bg-white text-muted small text-center">Sin foto de entrega</div>`;
 
         const el = document.getElementById('auditModal');
+        abrirModalSeguro(el);
+    }
+
+    // Función 2: Ver Detalles del Pedido (Información General)
+    function viewOrderDetails(order) {
+        // CORRECCIÓN: Nombres exactos del modelo Order.php
+        document.getElementById('detInvoice').innerText = order.invoice_number;
+        document.getElementById('detCustomer').innerText = order.customer_name;
+        document.getElementById('detFiscal').innerText = order.fiscal_data || 'No proporcionado';
+        document.getElementById('detAddress').innerText = order.delivery_address || 'No proporcionada';
+        
+        // Usamos customer_number y notes que es lo que tienes en tu $fillable
+        document.getElementById('detClientID').innerText = order.customer_number || 'Sin ID';
+        document.getElementById('detMaterials').innerText = order.materials;
+        document.getElementById('detNotes').innerText = order.notes || 'Sin observaciones adicionales';
+
+        const el = document.getElementById('orderDetailsModal');
+        abrirModalSeguro(el);
+    }
+
+    // Función auxiliar para manejar la apertura de modales sin conflictos
+    function abrirModalSeguro(elemento) {
         try {
             if (typeof bootstrap !== 'undefined') {
-                var myModal = new bootstrap.Modal(el);
+                var myModal = new bootstrap.Modal(elemento);
                 myModal.show();
             } else {
-                el.classList.add('show');
-                el.style.display = 'block';
+                elemento.classList.add('show');
+                elemento.style.display = 'block';
                 document.body.classList.add('modal-open');
             }
         } catch (e) {
-            el.classList.add('show');
-            el.style.display = 'block';
+            elemento.classList.add('show');
+            elemento.style.display = 'block';
             document.body.classList.add('modal-open');
         }
     }
 
-    // Lógica para cerrar el modal manualmente si falla bootstrap
+    // Cerrar modales manualmente
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('btn-close') || e.target.closest('[data-bs-dismiss="modal"]')) {
-            const el = document.getElementById('auditModal');
-            el.classList.remove('show');
-            el.style.display = 'none';
+            const modales = document.querySelectorAll('.modal');
+            modales.forEach(m => {
+                m.classList.remove('show');
+                m.style.display = 'none';
+            });
             document.body.classList.remove('modal-open');
         }
     });

@@ -19,8 +19,8 @@
                 <tbody>
                     @foreach($orders as $order)
                     <tr>
-                        <td>{{ $order->invoice_number }} [cite: 22]</td>
-                        <td>{{ $order->customer_name }} [cite: 23]</td>
+                        <td>{{ $order->invoice_number }}</td>
+                        <td>{{ $order->customer_name }}</td>
                         <td>{{ $order->updated_at->format('d/m/Y') }}</td>
                         <td>
                             <form action="{{ route('orders.restore', $order->id) }}" method="POST" style="display:inline;">

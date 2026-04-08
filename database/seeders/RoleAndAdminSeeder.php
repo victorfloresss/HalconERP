@@ -15,6 +15,7 @@ class RoleAndAdminSeeder extends Seeder
      */
     public function run(): void
     {
+        // Crear los Roles
         $roles = [
             ['name' => 'Admin', 'slug' => 'admin'],
             ['name' => 'Sales', 'slug' => 'sales'],
@@ -24,13 +25,64 @@ class RoleAndAdminSeeder extends Seeder
         ];
 
         foreach ($roles as $role) {
-            Role::create($role);
+            Role::firstOrCreate(['slug' => $role['slug']], $role);
         }
-        User::create([
-            'name' => 'Victor',
-            'email' => 'admin@halcon.com',
-            'password' => Hash::make('12345678'),
-            'role_id' => 1,
-        ]);
+
+        $adminId = Role::where('slug', 'admin')->first()->id;
+        $salesId = Role::where('slug', 'sales')->first()->id;
+        $purchasingId = Role::where('slug', 'purchasing')->first()->id;
+        $warehouseId = Role::where('slug', 'warehouse')->first()->id;
+        $routeId = Role::where('slug', 'route')->first()->id;
+
+        
+        // Victor - ADMIN
+        User::firstOrCreate(
+            ['email' => 'admin@halcon.com'],
+            [
+                'name' => 'Victor',
+                'password' => Hash::make('12345678'),
+                'role_id' => $adminId,
+            ]
+        );
+
+        // Emiliano - SALES
+        User::firstOrCreate(
+            ['email' => 'ventas@halcon.com'],
+            [
+                'name' => 'Emiliano',
+                'password' => Hash::make('12345678'),
+                'role_id' => $salesId,
+            ]
+        );
+
+        // Antonio - WAREHOUSE
+        User::firstOrCreate(
+            ['email' => 'almacen@halcon.com'],
+            [
+                'name' => 'Antonio',
+                'password' => Hash::make('12345678'),
+                'role_id' => $warehouseId,
+            ]
+        );
+
+        // Jordan - ROUTE
+        User::firstOrCreate(
+            ['email' => 'ruta@halcon.com'],
+            [
+                'name' => 'Jordan',
+                'password' => Hash::make('12345678'),
+                'role_id' => $routeId,
+            ]
+        );
+
+        // Karla - PURCHASING
+        User::firstOrCreate(
+            ['email' => 'compras@halcon.com'],
+            [
+                'name' => 'Karla',
+                'password' => Hash::make('12345678'),
+                'role_id' => $purchasingId,
+            ]
+        );
     }
 }

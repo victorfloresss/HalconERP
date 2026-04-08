@@ -13,11 +13,11 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label>Número de Factura</label>
-                        <input type="text" name="invoice_number" class="form-control" placeholder="Ej: FAC-01" required>
+                        <input type="text" name="invoice_number" class="form-control" placeholder="FAC-01" required>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label>ID del Cliente</label>
-                        <input type="text" name="customer_number" class="form-control" placeholder="ID" required>
+                        <input type="text" name="customer_number" class="form-control" placeholder="00" required>
                     </div>
                 </div>
 
@@ -32,7 +32,7 @@
                 <label for="materials" class="form-label">Materiales a Adquirir</label>
                 <textarea class="form-control @error('materials') is-invalid @enderror" 
                         id="materials" name="materials" rows="4" 
-                        placeholder="Ej: 50 bultos de cemento, 20 varillas de 3/8" required>{{ old('materials') }}</textarea>
+                        required>{{ old('materials') }}</textarea>
                 @error('materials')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror

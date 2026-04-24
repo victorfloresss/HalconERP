@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('products', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::create('products', function (Blueprint $class) {
+            $class->id();
+            $class->string('name');
+            $class->integer('stock')->default(1000);
+            $class->string('unit');
+            $class->timestamps();
         });
     }
 

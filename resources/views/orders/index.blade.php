@@ -2,36 +2,40 @@
 
 @section('content')
 <style>
+    :root {
+        --p-halcon: #8C3E53; /* Vinotinto */
+        --s-halcon: #BFB195; /* Arena */
+        --a-halcon: #D99152; /* Naranja */
+        --d-halcon: #402718; /* Café */
+    }
+
     .modal { background: rgba(0,0,0,0.5); }
     .modal-backdrop { display: none !important; } 
     #auditModal, #orderDetailsModal { z-index: 9999 !important; }
-    .btn-link:hover { color: #0056b3 !important; text-decoration: underline !important; }
+    
+    .btn-link-halcon { color: var(--p-halcon) !important; font-weight: bold; text-decoration: none; }
+    .btn-link-halcon:hover { color: var(--d-halcon) !important; text-decoration: underline !important; }
+
+    .table-halcon thead { background-color: var(--d-halcon) !important; color: var(--s-halcon) !important; }
+
+    .btn-halcon-vino { background-color: var(--p-halcon) !important; color: white !important; border-radius: 12px !important; border: none !important; }
+    .btn-halcon-vino:hover { background-color: var(--d-halcon) !important; }
+
+    .badge-material { font-size: 0.85rem; padding: 0.5rem; }
 </style>
 
 <div class="container-fluid">
-    <div class="card shadow-sm border-0">
+    <div class="card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
         <div class="card-header d-flex justify-content-between align-items-center bg-white py-3">
-            <strong><i class="cil-list"></i> Gestión de Pedidos - Halcón ERP</strong>
+            <strong style="color: var(--d-halcon); font-size: 1.1rem;"><i class="cil-list"></i> Gestión de Pedidos - Halcón ERP</strong>
             @if(in_array(Auth::user()->role->slug, ['sales', 'admin']))
-                <a href="{{ route('orders.create') }}" class="btn btn-sm btn-primary shadow-sm">+ Nuevo Pedido</a>
+                <a href="{{ route('orders.create') }}" class="btn btn-sm btn-halcon-vino shadow-sm px-3">+ Nuevo Pedido</a>
             @endif
         </div>
         <div class="card-body">
-            {{-- Buscador --}}
-            <form action="{{ route('orders.index') }}" method="GET" class="mb-4">
-                <div class="row">
-                    <div class="col-md-4">
-                        <input type="text" name="search" class="form-control form-control-sm" placeholder="Buscar por Factura o Cliente..." value="{{ request('search') }}">
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-sm btn-secondary px-3">Buscar</button>
-                    </div>
-                </div>
-            </form>
-
             <div class="table-responsive">
                 <table class="table table-hover table-bordered align-middle text-center">
-                    <thead class="table-dark">
+                    <thead class="table-halcon">
                         <tr>
                             <th>Factura</th>
                             <th class="text-start">Cliente</th>
@@ -46,28 +50,29 @@
                         @foreach($orders as $order)
                         <tr>
                             <td>
-                                {{-- Link para ver detalles completos --}}
-                                <button type="button" class="btn btn-link fw-bold text-decoration-none p-0" 
-                                    onclick="viewOrderDetails({{ json_encode($order) }})" title="Clic para ver detalles completos">
+                                @php $jsonOrder = json_encode($order->load('products')); @endphp
+                                <button type="button" class="btn btn-link-halcon p-0" onclick='viewOrderDetails({!! $jsonOrder !!})'>
                                     {{ $order->invoice_number }}
                                 </button>
                             </td>
-                            <td class="text-start">{{ $order->customer_name }}</td>
+                            <td class="text-start" style="color: var(--d-halcon);">{{ $order->customer_name }}</td>
                             <td class="text-start">
-                                <span title="{{ $order->materials }}" style="cursor: help;">
-                                    {{ Str::limit($order->materials, 25) }}
-                                </span>
+                                @foreach($order->products as $product)
+                                    <small class="d-block text-truncate" style="max-width: 180px; color: #8C5B3F;">
+                                        • {{ $product->pivot->quantity }} x {{ $product->name }}
+                                    </small>
+                                @endforeach
                             </td>
                             <td>
                                 @php
-                                    $badgeClass = [
-                                        'Ordered' => 'bg-secondary',
-                                        'In process' => 'bg-warning text-dark',
-                                        'In route' => 'bg-info text-white',
-                                        'Delivered' => 'bg-success'
+                                    $badgeStyle = [
+                                        'Ordered' => 'background-color: var(--s-halcon); color: var(--d-halcon);',
+                                        'In process' => 'background-color: var(--a-halcon); color: white;',
+                                        'In route' => 'background-color: #8C5B3F; color: white;',
+                                        'Delivered' => 'background-color: var(--p-halcon); color: white;'
                                     ][$order->status] ?? 'bg-primary';
                                 @endphp
-                                <span class="badge {{ $badgeClass }}">
+                                <span class="badge shadow-sm" style="{{ $badgeStyle }} padding: 0.5rem; border-radius: 5px;">
                                     {{ $order->status }}
                                 </span>
                             </td>
@@ -81,7 +86,7 @@
                                     @endphp
 
                                     @if($urlCarga || $urlEntrega)
-                                        <button type="button" class="btn btn-sm btn-outline-dark fw-bold" 
+                                        <button type="button" class="btn btn-sm fw-bold" style="border: 1px solid var(--s-halcon); color: var(--d-halcon); background: #fcfaf7;"
                                             onclick="openAuditSimple('{{ $order->invoice_number }}', '{{ addslashes($order->customer_name) }}', '{{ $urlCarga }}', '{{ $urlEntrega }}', '{{ $order->status }}')">
                                             📸 Ver fotos
                                         </button>
@@ -93,36 +98,40 @@
 
                             <td>
                                 <div class="d-flex justify-content-center gap-1">
+                                    {{-- 1. SURTIR --}}
                                     @if($order->status == 'Ordered' && in_array(Auth::user()->role->slug, ['warehouse', 'admin']))
                                         <form action="{{ route('orders.updateStatus', $order->id) }}" method="POST">
                                             @csrf @method('PATCH')
                                             <input type="hidden" name="status" value="In process">
-                                            <button type="submit" class="btn btn-sm btn-warning fw-bold">SURTIR</button>
+                                            <button type="submit" class="btn btn-sm fw-bold text-white" style="background-color: var(--a-halcon); border:none;">SURTIR</button>
                                         </form>
                                     @endif
 
-                                    @if($order->status == 'In process' && in_array(Auth::user()->role->slug, ['route', 'admin']))
+                                    {{-- 2. DESPACHAR --}}
+                                    @if($order->status == 'In process' && in_array(Auth::user()->role->slug, ['warehouse', 'admin']))
                                         <form action="{{ route('orders.updateStatus', $order->id) }}" method="POST" enctype="multipart/form-data">
                                             @csrf @method('PATCH')
                                             <input type="hidden" name="status" value="In route">
                                             <input type="file" name="loaded_unit_photo" id="photo_load_{{ $order->id }}" accept="image/*" capture="camera" style="display:none" onchange="this.form.submit()">
-                                            <button type="button" class="btn btn-sm btn-info text-white fw-bold" onclick="document.getElementById('photo_load_{{ $order->id }}').click()">
+                                            <button type="button" class="btn btn-sm fw-bold text-white" style="background-color: #8C5B3F; border:none;" onclick="document.getElementById('photo_load_{{ $order->id }}').click()">
                                                 DESPACHAR
                                             </button>
                                         </form>
                                     @endif
 
+                                    {{-- 3. ENTREGAR --}}
                                     @if($order->status == 'In route' && in_array(Auth::user()->role->slug, ['route', 'admin']))
                                         <form action="{{ route('orders.updateStatus', $order->id) }}" method="POST" enctype="multipart/form-data">
                                             @csrf @method('PATCH')
                                             <input type="hidden" name="status" value="Delivered">
                                             <input type="file" name="delivered_material_photo" id="photo_del_{{ $order->id }}" accept="image/*" capture="camera" style="display:none" onchange="this.form.submit()">
-                                            <button type="button" class="btn btn-sm btn-success fw-bold" onclick="document.getElementById('photo_del_{{ $order->id }}').click()">
+                                            <button type="button" class="btn btn-sm fw-bold text-white" style="background-color: var(--p-halcon); border:none;" onclick="document.getElementById('photo_del_{{ $order->id }}').click()">
                                                 ENTREGAR
                                             </button>
                                         </form>
                                     @endif
 
+                                    {{-- 4. ELIMINAR --}}
                                     @if(Auth::user()->role->slug === 'admin')
                                         <form action="{{ route('orders.destroy', $order->id) }}" method="POST" onsubmit="return confirm('¿Borrar pedido?')">
                                             @csrf @method('DELETE')
@@ -140,7 +149,6 @@
     </div>
 </div>
 
-{{-- MODAL 1: AUDITORÍA DE FOTOS --}}
 <div class="modal fade" id="auditModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content shadow-lg border-0 rounded-3">
@@ -148,25 +156,25 @@
                 <h5 class="modal-title fw-bold">Evidencias: <span id="modalInvoice" class="text-info"></span></h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-4 bg-light">
-                <div class="row mb-4 text-center">
+            <div class="modal-body p-4 bg-light text-center">
+                <div class="row mb-4">
                     <div class="col-md-6 border-end">
-                        <p class="mb-1 text-muted small">CLIENTE</p>
+                        <p class="mb-1 text-muted small text-uppercase">Cliente</p>
                         <h6 id="modalCustomer" class="fw-bold"></h6>
                     </div>
                     <div class="col-md-6">
-                        <p class="mb-1 text-muted small">ESTADO</p>
+                        <p class="mb-1 text-muted small text-uppercase">Estado</p>
                         <span id="modalStatus" class="badge"></span>
                     </div>
                 </div>
                 <hr>
-                <div class="row text-center">
-                    <div class="col-md-6 mb-3">
-                        <h6 class="fw-bold text-info small mb-3">FOTO DE CARGA</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="fw-bold small mb-3" style="color: var(--a-halcon);">FOTO DE CARGA</h6>
                         <div id="photoLoadedContainer"></div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <h6 class="fw-bold text-success small mb-3">FOTO DE ENTREGA</h6>
+                    <div class="col-md-6">
+                        <h6 class="fw-bold small mb-3" style="color: var(--p-halcon);">FOTO DE ENTREGA</h6>
                         <div id="photoDeliveredContainer"></div>
                     </div>
                 </div>
@@ -175,21 +183,21 @@
     </div>
 </div>
 
-{{-- MODAL 2: DETALLES COMPLETOS DEL PEDIDO --}}
+{{-- MODAL 2: DETALLES COMPLETOS --}}
 <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content shadow-lg border-0 rounded-3">
-            <div class="modal-header bg-primary text-white border-0">
+            <div class="modal-header text-white border-0" style="background-color: var(--p-halcon);">
                 <h5 class="modal-title fw-bold">Información Completa: <span id="detInvoice"></span></h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-4 bg-white">
+            <div class="modal-body p-4 bg-white text-start">
                 <div class="row g-4">
-                    <div class="col-md-6">
+                    <div class="col-md-6 border-end">
                         <h6 class="text-uppercase text-muted small fw-bold mb-3">Cliente y Fiscal</h6>
                         <div class="p-3 bg-light rounded shadow-sm">
                             <p class="mb-1 text-secondary small">Nombre:</p>
-                            <p class="fw-bold mb-3" id="detCustomer"></p>
+                            <p class="fw-bold mb-3" id="detCustomer" style="color: var(--d-halcon);"></p>
                             <p class="mb-1 text-secondary small">Datos Fiscales:</p>
                             <p class="small text-dark" id="detFiscal"></p>
                         </div>
@@ -198,7 +206,7 @@
                         <h6 class="text-uppercase text-muted small fw-bold mb-3">Logística</h6>
                         <div class="p-3 bg-light rounded shadow-sm">
                             <p class="mb-1 text-secondary small">Dirección de Entrega:</p>
-                            <p class="fw-bold mb-3" id="detAddress"></p>
+                            <p class="fw-bold mb-3" id="detAddress" style="color: var(--d-halcon);"></p>
                             <p class="mb-1 text-secondary small">ID Cliente / Referencia:</p>
                             <p class="small text-dark" id="detClientID"></p>
                         </div>
@@ -206,9 +214,9 @@
                     <div class="col-12">
                         <h6 class="text-uppercase text-muted small fw-bold mb-3">Contenido y Notas</h6>
                         <div class="p-3 border rounded shadow-sm">
-                            <p class="mb-1 text-secondary small">Materiales:</p>
-                            <p class="mb-3" id="detMaterials"></p>
-                            <p class="mb-1 text-secondary small">Notas Extra:</p>
+                            <p class="mb-1 text-secondary small font-weight-bold">Materiales (Inventario):</p>
+                            <div id="detMaterialsList" class="mb-3 d-flex flex-wrap"></div>
+                            <p class="mb-1 text-secondary small font-weight-bold">Notas Extra:</p>
                             <p class="text-muted italic mb-0" id="detNotes"></p>
                         </div>
                     </div>
@@ -219,74 +227,79 @@
 </div>
 
 <script>
-    // Función 1: Ver Fotos (Auditoría)
     function openAuditSimple(invoice, customer, urlCarga, urlEntrega, status) {
         document.getElementById('modalInvoice').innerText = invoice;
         document.getElementById('modalCustomer').innerText = customer;
         const statusBadge = document.getElementById('modalStatus');
         statusBadge.innerText = status;
-        statusBadge.className = 'badge ' + (status == 'Delivered' ? 'bg-success' : 'bg-info');
+        
+        statusBadge.style = status == 'Delivered' 
+            ? 'background-color: #8C3E53; color: white; padding: 0.5rem; border-radius: 5px;' 
+            : 'background-color: #D99152; color: white; padding: 0.5rem; border-radius: 5px;';
 
-        const loadContainer = document.getElementById('photoLoadedContainer');
-        const delContainer = document.getElementById('photoDeliveredContainer');
-        const imgStyle = 'class="img-fluid rounded shadow-sm border" style="max-height: 350px; width: 100%; object-fit: cover;"';
+        const imgStyle = 'class="img-fluid rounded shadow-sm border" style="max-height: 300px; width: 100%; object-fit: cover;"';
+        document.getElementById('photoLoadedContainer').innerHTML = urlCarga ? `<img src="${urlCarga}" ${imgStyle}>` : '<div class="p-4 border rounded bg-white small text-muted">Sin foto</div>';
+        document.getElementById('photoDeliveredContainer').innerHTML = urlEntrega ? `<img src="${urlEntrega}" ${imgStyle}>` : '<div class="p-4 border rounded bg-white small text-muted">Sin foto</div>';
 
-        loadContainer.innerHTML = (urlCarga && urlCarga !== '') 
-            ? `<img src="${urlCarga}" ${imgStyle}>`
-            : `<div class="p-4 border rounded bg-white text-muted small text-center">Sin foto de carga</div>`;
-
-        delContainer.innerHTML = (urlEntrega && urlEntrega !== '') 
-            ? `<img src="${urlEntrega}" ${imgStyle}>`
-            : `<div class="p-4 border rounded bg-white text-muted small text-center">Sin foto de entrega</div>`;
-
-        const el = document.getElementById('auditModal');
-        abrirModalSeguro(el);
+        abrirModalSeguro('auditModal');
     }
 
-    // Función 2: Ver Detalles del Pedido (Información General)
     function viewOrderDetails(order) {
-        // CORRECCIÓN: Nombres exactos del modelo Order.php
         document.getElementById('detInvoice').innerText = order.invoice_number;
         document.getElementById('detCustomer').innerText = order.customer_name;
-        document.getElementById('detFiscal').innerText = order.fiscal_data || 'No proporcionado';
-        document.getElementById('detAddress').innerText = order.delivery_address || 'No proporcionada';
-        
-        // Usamos customer_number y notes que es lo que tienes en tu $fillable
-        document.getElementById('detClientID').innerText = order.customer_number || 'Sin ID';
-        document.getElementById('detMaterials').innerText = order.materials;
-        document.getElementById('detNotes').innerText = order.notes || 'Sin observaciones adicionales';
+        document.getElementById('detFiscal').innerText = order.fiscal_data || 'N/A';
+        document.getElementById('detAddress').innerText = order.delivery_address;
+        document.getElementById('detClientID').innerText = order.customer_number;
+        document.getElementById('detNotes').innerText = order.notes || 'Sin notas';
 
-        const el = document.getElementById('orderDetailsModal');
-        abrirModalSeguro(el);
+        const listContainer = document.getElementById('detMaterialsList');
+        listContainer.innerHTML = ''; 
+
+        if(order.products && order.products.length > 0) {
+            order.products.forEach(p => {
+                const badge = document.createElement('div');
+                badge.className = 'badge bg-white text-dark border p-2 me-2 mb-2 shadow-sm';
+                badge.innerHTML = `<i class="cil-check text-success"></i> ${p.pivot.quantity} x ${p.name}`;
+                listContainer.appendChild(badge);
+            });
+        }
+        abrirModalSeguro('orderDetailsModal');
     }
 
-    // Función auxiliar para manejar la apertura de modales sin conflictos
-    function abrirModalSeguro(elemento) {
+    function abrirModalSeguro(idModal) {
+        const elemento = document.getElementById(idModal);
+        if (!elemento) return;
+
         try {
-            if (typeof bootstrap !== 'undefined') {
-                var myModal = new bootstrap.Modal(elemento);
-                myModal.show();
-            } else {
-                elemento.classList.add('show');
-                elemento.style.display = 'block';
-                document.body.classList.add('modal-open');
-            }
+            let myModal = bootstrap.Modal.getOrCreateInstance(elemento);
+            myModal.show();
         } catch (e) {
             elemento.classList.add('show');
             elemento.style.display = 'block';
             document.body.classList.add('modal-open');
+            if (!document.querySelector('.modal-backdrop')) {
+                const backdrop = document.createElement('div');
+                backdrop.className = 'modal-backdrop fade show';
+                document.body.appendChild(backdrop);
+            }
         }
     }
 
-    // Cerrar modales manualmente
     document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('btn-close') || e.target.closest('[data-bs-dismiss="modal"]')) {
-            const modales = document.querySelectorAll('.modal');
-            modales.forEach(m => {
-                m.classList.remove('show');
-                m.style.display = 'none';
-            });
-            document.body.classList.remove('modal-open');
+        if (e.target.closest('[data-bs-dismiss="modal"]')) {
+            const modal = e.target.closest('.modal');
+            if (modal) {
+                try {
+                    const instance = bootstrap.Modal.getInstance(modal);
+                    if (instance) instance.hide();
+                } catch(err) {
+                    modal.classList.remove('show');
+                    modal.style.display = 'none';
+                    document.body.classList.remove('modal-open');
+                    const backdrop = document.querySelector('.modal-backdrop');
+                    if (backdrop) backdrop.remove();
+                }
+            }
         }
     });
 </script>

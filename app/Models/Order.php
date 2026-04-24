@@ -13,7 +13,6 @@ class Order extends Model
         'invoice_number',    // Folio consecutivo
         'customer_number',   // ID único del cliente
         'customer_name',     // Nombre o razón social
-        'materials',         // Lista de materiales
         'fiscal_data',       // Datos para factura física
         'delivery_address',  // Dirección de entrega 
         'notes',             // Notas extra
@@ -31,5 +30,10 @@ class Order extends Model
     public function evidences()
     {
         return $this->hasMany(EvidencePhoto::class);
+    }
+    
+    public function products()
+    {
+        return $this->belongsToMany(Product::class)->withPivot('quantity')->withTimestamps();
     }
 }

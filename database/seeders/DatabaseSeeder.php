@@ -17,6 +17,7 @@ public function run(): void
 {
     $this->call([
         RoleAndAdminSeeder::class,
+        ProductSeeder::class,
         OrderSeeder::class,
     ]);
 }

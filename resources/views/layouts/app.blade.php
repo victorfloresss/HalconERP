@@ -56,6 +56,14 @@
             </li>
             @endif
 
+            @if(in_array(auth()->user()->role->slug, ['warehouse', 'purchasing', 'admin']))
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('inventory.index') }}">
+                        <i class="nav-icon cil-storage"></i> Inventario / Compras
+                    </a>
+                </li>
+            @endif
+
             @if(Auth::user()->role->slug == 'admin')
             <li class="nav-title">Administración</li>
             

@@ -9,3 +9,94 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+:root {
+    --primary-halcon: #8C3E53;    /* Vinotinto */
+    --secondary-halcon: #BFB195;  /* Arena */
+    --accent-halcon: #D99152;    /* Naranja Tierra */
+    --dark-halcon: #402718;      /* Café Profundo */
+    --earth-halcon: #8C5B3F;     /* Bronce/Tierra */
+}
+
+
+/* Botones Principales */
+.btn-primary, .bg-primary {
+    background-color: var(--primary-halcon) !important;
+    border-color: var(--primary-halcon) !important;
+    color: #fff !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--dark-halcon) !important;
+    border-color: var(--dark-halcon) !important;
+}
+
+/* Botones Outline */
+.btn-outline-primary {
+    color: var(--primary-halcon) !important;
+    border-color: var(--primary-halcon) !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-halcon) !important;
+    color: #fff !important;
+}
+
+/* Encabezados de Tarjetas y Tablas */
+.card-header.bg-primary, .table-dark {
+    background-color: var(--dark-halcon) !important;
+    border-color: var(--dark-halcon) !important;
+    color: var(--secondary-halcon) !important;
+}
+
+/* Color de Texto Primario (Usamos el Bronce para resaltar) */
+.text-primary {
+    color: var(--earth-halcon) !important;
+}
+
+/* Alertas de Peligro / Stock Crítico (Cambiado a Naranja Tierra) */
+.bg-danger, .card-header.bg-danger {
+    background-color: var(--accent-halcon) !important;
+    border-color: var(--accent-halcon) !important;
+}
+
+.text-danger {
+    color: var(--accent-halcon) !important;
+}
+
+/* --- CLASES DE UTILIDAD PROPIAS (Para usar en Dashboard e Inventario) --- */
+
+/* Fondos */
+.bg-halcon-vinotinto { background-color: var(--primary-halcon) !important; }
+.bg-halcon-arena { background-color: var(--secondary-halcon) !important; }
+.bg-halcon-naranja { background-color: var(--accent-halcon) !important; }
+.bg-halcon-cafe { background-color: var(--dark-halcon) !important; }
+.bg-halcon-bronce { background-color: var(--earth-halcon) !important; }
+
+/* Textos */
+.text-halcon-vinotinto { color: var(--primary-halcon) !important; }
+.text-halcon-cafe { color: var(--dark-halcon) !important; }
+.text-halcon-bronce { color: var(--earth-halcon) !important; }
+.text-halcon-naranja { color: var(--accent-halcon) !important; }
+.text-halcon-arena { color: var(--secondary-halcon) !important; }
+
+/* Bordes y Sombras */
+.border-halcon { border: 1px solid var(--secondary-halcon) !important; }
+
+.card-halcon {
+    border: none;
+    box-shadow: 0 4px 12px rgba(64, 39, 24, 0.12);
+    border-radius: 12px;
+}
+
+/* Estilo para iconos redondos en Dashboard e Inventario */
+.icon-circle-halcon {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: var(--secondary-halcon);
+    color: var(--dark-halcon);
+}

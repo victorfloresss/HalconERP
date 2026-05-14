@@ -1,0 +1,65 @@
+services:
+  # Aplicación Laravel
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: halcon-erp-app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    volumes:
+      - ./:/var/www
+      - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - app-network
+
+  # Servidor Web Nginx (No exponemos puertos al host, Cloudflare accede por red interna)
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - ./:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - app-network
+    depends_on:
+      - app
+
+  # Base de Datos MySQL
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    tty: true
+    environment:
+      MYSQL_DATABASE: halcon_db
+      MYSQL_ROOT_PASSWORD: root_password_segura
+      MYSQL_USER: halcon_user
+      MYSQL_PASSWORD: user_password_segura
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - app-network
+
+  # Cloudflare Tunnel
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    networks:
+      - app-network
+    depends_on:
+      - nginx
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local

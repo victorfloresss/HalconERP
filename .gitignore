@@ -22,3 +22,12 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Ignorar archivos sensibles y backups
+*.zip
+.env.local
+.env.prod
+.env.testing
+extraer.php
+index_out*.html
+sanctum_migration.sql

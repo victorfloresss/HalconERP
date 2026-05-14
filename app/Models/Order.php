@@ -14,11 +14,13 @@ class Order extends Model
         'customer_number',   // ID único del cliente
         'customer_name',     // Nombre o razón social
         'fiscal_data',       // Datos para factura física
-        'delivery_address',  // Dirección de entrega 
+        'delivery_address',  // Dirección de entrega
         'notes',             // Notas extra
         'status',            // Estado: Ordered, In process, etc.
         'is_deleted',        // Control de borrado lógico
-        'user_id'            // Vendedor que creó el pedido
+        'user_id',           // Vendedor que creó el pedido
+        'loaded_unit_photo',         // Foto de unidad cargada
+        'delivered_material_photo',  // Foto de material entregado
     ];
 
 

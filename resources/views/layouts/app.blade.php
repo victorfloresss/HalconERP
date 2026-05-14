@@ -68,7 +68,7 @@
             <li class="nav-title">Administración</li>
             
             <li class="nav-item">
-                <a class="nav-link {{ request()->is('users*') ? 'active' : '' }}" href="{{ route('users.index') }}">
+                <a class="nav-link {{ request()->is('users*') ? 'active' : '' }}" href="/users">
                     <i class="nav-icon cil-people"></i> Empleados
                 </a>
             </li>
